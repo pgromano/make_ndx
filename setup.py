@@ -14,6 +14,5 @@ setup(
         'numpy',
         'parmed'
     ],
-    ext_modules=extensions,
     zip_safe = False,
 )
