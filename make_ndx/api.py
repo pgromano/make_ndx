@@ -3,8 +3,19 @@ import parmed as pmd
 
 class Molecule(object):
     def __init__(self, topfile):
+        '''
+        Identifies the file format of the specified topology file and returns
+        its parsed contents.
+
+        Parameters
+        ----------
+        topfile : str
+            The name of the topology file to try to parse. If the filename starts with
+            http:// or https:// or ftp://, it is treated like a URL and the file will be
+            loaded directly from its remote location on the web
+        '''
         # Create topology dataframe
-        topology = pmd.load_file(topfile).to_dataframe()
+        topology = pmd.load_file(topfile, structure=True).to_dataframe()
 
         # Create chainid key
         topology['chainid'] = topology['chain']
@@ -19,8 +30,8 @@ class Molecule(object):
         self._xyz = topology[['xx', 'xy', 'xz']].as_matrix()
 
     def chains(self, chainid=None):
-        ''' Retrun list of chain types.
-        n: int (Default: None)
+        ''' List of chain types.
+        chainid: int (Default=None)
             Index value to get chain type by chain sequence. Default is None which
             returns all chain types.
         '''
@@ -32,6 +43,11 @@ class Molecule(object):
         return len(self.chains())
 
     def residues(self, chainid=None):
+        ''' List of residue types.
+        chainid: int (Default=None)
+            Index value to get residues from specific chain type. Default is
+            None which returns all residues from all chain types.
+        '''
         res_idx = list(np.concatenate([[0], np.where(self._index[:-1,1] != self._index[1:,1])[0]+1]))
         chain_per_res = self._name[res_idx,0]
         residues = self._name[res_idx,1]
@@ -42,10 +58,24 @@ class Molecule(object):
             return np.squeeze(residues[chain_per_res == self.chains(chainid)])
 
     def n_residues(self, chainid=None):
-        'Number of residues in topology'
+        '''Number of residues in topology
+        chainid: int (Default=None)
+            Index value to get number of residues within specific chain type.
+            Default is None which returns the total number of residues across
+            all chains.
+        '''
         return len(self.residues(chainid))
 
     def atoms(self, chainid=None, resid=None):
+        ''' List of residue types.
+        chainid: int (Default=None)
+            Index value to get atoms from specific chain type. Default is
+            None which returns all residues from all chain types.
+        resid: int (Default=None)
+            Index value to get atoms from specific residue atom. Default is None
+            which returns all atoms from all residues. Note if chainid is
+            supplied, the residue index begins specific to chain type.
+        '''
         if chainid is None:
             if resid is None:
                 return self._name[:,2]
@@ -63,6 +93,24 @@ class Molecule(object):
         return self._name.shape[0]
 
     def where(self, atoms, chainid=None, resid=None):
+        ''' Find index for all supplied atom types
+        Parameters:
+        -----------
+        atoms: str, list
+            A string or list of strings of the atom types to be index from
+            topology file.
+        chainid: int (Default=None)
+            Index value to get atoms from specific chain type. Default is
+            None which returns all residues from all chain types.
+        resid: int (Default=None)
+            Index value to get atoms from specific residue atom. Default is None
+            which returns all atoms from all residues. Note if chainid is
+            supplied, the residue index begins specific to chain type.
+        Returns:
+        --------
+        index: int, list
+            Returns index or list of indices where queried atom types are found.
+        '''
         if type(atoms) == str:
             atoms = list(atoms)
 
@@ -84,4 +132,5 @@ class Molecule(object):
 
     @property
     def positions(self):
+        '''Return the atomic cartesian coordinates array'''
         return self._xyz
