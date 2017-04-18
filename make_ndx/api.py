@@ -112,7 +112,7 @@ class Molecule(object):
             Returns index or list of indices where queried atom types are found.
         '''
         if type(atoms) == str:
-            atoms = list(atoms)
+            atoms = [atoms]
 
         if chainid is None:
             if resid is None:
