@@ -1,7 +1,7 @@
 import numpy as np
 import parmed as pmd
 
-class Molecule(object):
+class Parser(object):
     def __init__(self, topfile):
         '''
         Identifies the file format of the specified topology file and returns
